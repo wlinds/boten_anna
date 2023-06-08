@@ -11,7 +11,14 @@ with open('keys.json') as f:
 TOKEN, CHAT_ID, WEATHER_KEY = keys["TOKEN"], keys["CHAT_ID"], keys["WEATHER"]
 
 
-async def get_weather(city: str) -> str:
+async def weather_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    print(f'{update.effective_user.first_name} requested /weather.')
+    city = ' '.join(context.args)
+    if not city:
+        print(f'No city selected.')
+        await update.message.reply_text("Please provide a city name.")
+        return
+
     url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={WEATHER_KEY}"
     response = requests.get(url)
     data = response.json()
@@ -28,29 +35,28 @@ async def get_weather(city: str) -> str:
                        f"Description: {description}\n" \
                        f"Temperature: {temperature_celsius:.2f} °C\n" \
                        f"Humidity: {humidity}%"
+        print(f'Success. \n{weather_info} posted.')
+
     else:
+        print(f'Could not find city {city}.')
         weather_info = f"Failed to retrieve weather information for {city}."
 
-    return weather_info
-
-
-async def weather_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    # Get the text after the command as the city
-    city = ' '.join(context.args)
-    if not city:
-        await update.message.reply_text("Please provide a city name.")
-        return
-    
-    weather_info = await get_weather(city)
     await update.message.reply_text(weather_info)
 
 
+
 async def roll_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(f'{update.effective_user.first_name} rolls {np.random.randint(1,99)} (1-100)')
+    print(f'{update.effective_user.first_name} requested /roll.')
+    roll = np.random.randint(1,99)
+    await update.message.reply_text(f'{update.effective_user.first_name} rolls {roll} (1-100)')
+    print(f'Success. {roll=}.')
+
 
 
 async def hello(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    print(f'{update.effective_user.first_name} requested /hello.')
     await update.message.reply_text(f'{welcome_message()}, {update.effective_user.first_name}')
+    print(f'Success.')
 
 
 
@@ -61,6 +67,6 @@ if __name__ == "__main__":
     app.add_handler(CommandHandler("weather", weather_command))
     app.add_handler(CommandHandler("roll", roll_command))
     
+    print('Bot started.')
     app.run_polling()
 
-    print('Bot started.')
