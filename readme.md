@@ -1,3 +1,13 @@
+<br>
+<blockquote>
+
+*Jag känner en bot, hon heter Anna, Anna heter hon\
+Och hon kan banna, banna dig så hårt\
+Hon röjer upp i våran kanal\
+Jag vill berätta för dig, att jag känner en bot~*
+
+</blockquote>
+<br>
 
 ## **Boten Anna** 💁‍♀️
 
@@ -44,3 +54,16 @@ Create a json file and name it keys.json, add to the same directory as the Pytho
 # 🤖 - hellö
 
 
+## **TODO**
+- Add more commands.
+
+
+Look, Anna should know how to *"ban someone so hard"*, so we want to allow her to kick people from group chats.
+
+If we look furher into the Anna lore, we find that she <a href="https://genius.com/Basshunter-boten-anna-lyrics">*"gör sig av med alla som spammar"*</a>, meaning she will get rid of spammers. Maybe set up some kind of threshold for messages per time unit before kicking?
+
+- Maybe hook up an SQL table for user data, so she can remember stuff about users?
+
+- Maybe add some other API?
+
+- M̵̙͠a̸͓̕k̵̖̊e̴̛͚ ̵̤̈h̷͍̏e̵̗̕r̵̯͠ ̶̺͐s̴͕͝ḙ̷̌ṇ̸̔t̴̬͂i̴̫̍e̸̞̓n̵͉̽t̵̰̿
