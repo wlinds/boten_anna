@@ -3,6 +3,7 @@ import requests
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 from misc import *
+import numpy as np
 
 # CHAT_ID is currently not used and can be removed. It might be used in the future however.
 with open('keys.json') as f:
@@ -44,8 +45,13 @@ async def weather_command(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     await update.message.reply_text(weather_info)
 
 
+async def roll_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(f'{update.effective_user.first_name} rolls {np.random.randint(1,99)} (1-100)')
+
+
 async def hello(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text(f'{welcome_message()}, {update.effective_user.first_name}')
+
 
 
 if __name__ == "__main__":
@@ -53,6 +59,7 @@ if __name__ == "__main__":
     
     app.add_handler(CommandHandler("hello", hello))
     app.add_handler(CommandHandler("weather", weather_command))
+    app.add_handler(CommandHandler("roll", roll_command))
     
     app.run_polling()
 
