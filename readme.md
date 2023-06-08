@@ -1,4 +1,4 @@
-<br>
+<br><br>
 <blockquote>
 
 *Jag känner en bot, hon heter Anna, Anna heter hon\
@@ -55,7 +55,12 @@ Create a json file and name it keys.json, add to the same directory as the Pytho
 
 
 ## **TODO**
-- Add more commands.
+
+- Print info to console when function is triggered by user
+
+- Maybe add log files for later troubleshooting (prevent tedious debugging)
+
+- Add more commands. Anything goes!
 
 
 Look, Anna should know how to *"ban someone so hard"*, so we want to allow her to kick people from group chats.
