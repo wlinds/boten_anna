@@ -5,12 +5,6 @@ from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 from misc import *
 import numpy as np
 
-# CHAT_ID is currently not used and can be removed. It might be used in the future however.
-with open('keys.json') as f:
-    keys = json.load(f)
-TOKEN, CHAT_ID, WEATHER_KEY = keys["TOKEN"], keys["CHAT_ID"], keys["WEATHER"]
-
-
 async def weather_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     print(f'{update.effective_user.first_name} requested /weather.')
     city = ' '.join(context.args)
@@ -44,13 +38,11 @@ async def weather_command(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     await update.message.reply_text(weather_info)
 
 
-
-async def roll_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def roll_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     print(f'{update.effective_user.first_name} requested /roll.')
     roll = np.random.randint(1,99)
     await update.message.reply_text(f'{update.effective_user.first_name} rolls {roll} (1-100)')
     print(f'Success. {roll=}.')
-
 
 
 async def hello(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -59,8 +51,14 @@ async def hello(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     print(f'Success.')
 
 
+def get_keys() -> tuple[str, str, str]:
+    with open('keys.json') as f:
+        keys = json.load(f)
+    return keys["TOKEN"], keys["CHAT_ID"], keys["WEATHER"]
+    # CHAT_ID is currently not used and can be removed. It might be used in the future however.
 
 if __name__ == "__main__":
+    TOKEN, CHAT_ID, WEATHER_KEY = get_keys()
     app = ApplicationBuilder().token(TOKEN).build()
     
     app.add_handler(CommandHandler("hello", hello))
