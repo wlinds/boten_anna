@@ -28,9 +28,9 @@ def google_search(query, verbose=False):
         # Loop through the div elements and print the links
         for div_element in div_elements:
             link = div_element.a['href']
-            return link
             if verbose:
                 print(link)
+            return link
     else:
         print("No search results found.")
 

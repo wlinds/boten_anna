@@ -51,14 +51,14 @@ async def hello(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     print(f'Success.')
 
 async def googlar(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    print(f'{update.effective_user.first_name} requested /google.')
     query = ' '.join(context.args)
+    print(f'{update.effective_user.first_name} requested /google with {query=}.')
     if not query:
         print(f'No search query selected selected.')
         await update.message.reply_text("Please provide a search query.")
         return
 
-    search_results = google_search(query)
+    search_results = google_search(query, verbose=True)
     await update.message.reply_text(search_results)
 
 def get_keys() -> tuple[str, str, str]:
