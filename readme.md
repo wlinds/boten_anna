@@ -24,6 +24,7 @@ The library expects callback functions, such as <code>hello()</code> and <code>w
 | `/hello`           | Greets the user.                                                                                    |
 | `/roll`            | When members of a group have equal claims to something—such as a piece of loot, a chest, or a                    resource node—they will roll for it; the player who rolls the highest number is the winner.         |
 | `/weather {city}`  | Get weather data through OpenWeatherMap API from any city.                                         |
+| `/google {query}`  | Get google search results for any query                                        |
 
 
 ## **Setup**

@@ -1,9 +1,9 @@
-import json
-import requests
+import json, requests
 from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, Updater
 from misc import *
 import numpy as np
+
 
 async def weather_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     print(f'{update.effective_user.first_name} requested /weather.')
@@ -50,6 +50,16 @@ async def hello(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text(f'{welcome_message()}, {update.effective_user.first_name}')
     print(f'Success.')
 
+async def googlar(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    print(f'{update.effective_user.first_name} requested /google.')
+    query = ' '.join(context.args)
+    if not query:
+        print(f'No search query selected selected.')
+        await update.message.reply_text("Please provide a search query.")
+        return
+
+    search_results = google_search(query)
+    await update.message.reply_text(search_results)
 
 def get_keys() -> tuple[str, str, str]:
     with open('keys.json') as f:
@@ -59,12 +69,13 @@ def get_keys() -> tuple[str, str, str]:
 
 if __name__ == "__main__":
     TOKEN, CHAT_ID, WEATHER_KEY = get_keys()
-    app = ApplicationBuilder().token(TOKEN).build()
+    bot = ApplicationBuilder().token(TOKEN).build()
+
+    bot.add_handler(CommandHandler("hello", hello))
+    bot.add_handler(CommandHandler("weather", weather_command))
+    bot.add_handler(CommandHandler("roll", roll_command))
+    bot.add_handler(CommandHandler("google", googlar))
     
-    app.add_handler(CommandHandler("hello", hello))
-    app.add_handler(CommandHandler("weather", weather_command))
-    app.add_handler(CommandHandler("roll", roll_command))
-    
-    print('Bot started.')
-    app.run_polling()
+    print('Bot is running.')
+    bot.run_polling()
 
