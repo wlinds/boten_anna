@@ -6,11 +6,13 @@ import numpy as np
 
 
 async def weather_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Get weather updates from any city/region"""
+    
     print(f'{update.effective_user.first_name} requested /weather.')
     city = ' '.join(context.args)
     if not city:
         print(f'No city selected.')
-        await update.message.reply_text("Please provide a city name.")
+        await update.message.reply_text("Please provide a city or region.")
         return
 
     url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={WEATHER_KEY}"
@@ -39,18 +41,41 @@ async def weather_command(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 
 
 async def roll_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    print(f'{update.effective_user.first_name} requested /roll.')
-    roll = np.random.randint(1,99)
-    await update.message.reply_text(f'{update.effective_user.first_name} rolls {roll} (1-100)')
+    """Roll a dice. Defaults to 1-100 but handles argument for any positive integer (dice sides)."""
+
+    command_text = update.message.text.strip() # Extract the highest number from the command, if provided
+    highest = 100  # Default highest number
+
+    print(f'{update.effective_user.first_name} requested /roll, {command_text=}.')
+
+    if len(command_text.split()) > 1:
+        try:
+            highest = int(command_text.split()[1])
+            if highest <= 0:
+                raise ValueError("Highest number must be a positive integer.")
+        except ValueError:
+            await update.message.reply_text(f"Can't roll die with {highest} sides. Try a positive integer.")
+            return
+
+    # Handle case if someone decides to roll one-sided dice
+    if highest == 1:
+        roll = 1
+    else:
+        roll = np.random.randint(1, highest)
+
+    await update.message.reply_text(f'{update.effective_user.first_name} rolls {roll} (1-{highest})')
     print(f'Success. {roll=}.')
 
-
 async def hello(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """ Greets the user with welcome_message located in misc.py """
+
     print(f'{update.effective_user.first_name} requested /hello.')
     await update.message.reply_text(f'{welcome_message()}, {update.effective_user.first_name}')
     print(f'Success.')
 
 async def googlar(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Calls google_search() located in misc.py"""
+
     query = ' '.join(context.args)
     print(f'{update.effective_user.first_name} requested /google with {query=}.')
     if not query:
@@ -62,6 +87,17 @@ async def googlar(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text(search_results)
 
 def get_keys() -> tuple[str, str, str]:
+    """Get keys from json.
+
+    Create your own keys.json with this structure:
+
+    {
+    "TOKEN": "chatbot-token",
+    "CHAT_ID": "your-chat-id",
+    "WEATHER": "your-weather-api"
+    }
+    """
+    
     with open('keys.json') as f:
         keys = json.load(f)
     return keys["TOKEN"], keys["CHAT_ID"], keys["WEATHER"]
@@ -71,11 +107,17 @@ if __name__ == "__main__":
     TOKEN, CHAT_ID, WEATHER_KEY = get_keys()
     bot = ApplicationBuilder().token(TOKEN).build()
 
-    bot.add_handler(CommandHandler("hello", hello))
-    bot.add_handler(CommandHandler("weather", weather_command))
-    bot.add_handler(CommandHandler("roll", roll_command))
-    bot.add_handler(CommandHandler("google", googlar))
-    
+    list_of_handlers = [
+        ("hello", hello),
+        ("weather", weather_command),
+        ("roll", roll_command),
+        ("google", googlar)
+    ]
+
+    for command, callback in list_of_handlers:
+        bot.add_handler(CommandHandler(command, callback))
+
+
     print('Bot is running.')
     bot.run_polling()
 
