@@ -11,9 +11,9 @@ Jag vill berätta för dig, att jag känner en bot~*
 
 ## **Boten Anna** 💁‍♀️
 
-This Telegram bot implement asynchronous functions, allowing for concurrent execution of multiple tasks without blocking the program's execution. The <a href="https://docs.python-telegram-bot.org/en/stable/telegram.ext.html">telegram.ext library</a> builds upon the <a href="https://docs.python.org/3/library/asyncio.html">asyncio library</a> to handle asynchronous operations. 
+This Telegram group chat bot implement asynchronous functions, allowing for concurrent execution of multiple tasks without blocking the program's execution. The <a href="https://docs.python-telegram-bot.org/en/stable/telegram.ext.html">telegram.ext library</a> builds upon the <a href="https://docs.python.org/3/library/asyncio.html">asyncio library</a> to handle asynchronous operations. 
 
-The library expects callback functions, such as <code>hello()</code> and <code>weather_command()</code>, to be defined as asynchronous functions. This approach enables the bot to handle multiple incoming updates concurrently, ensuring a seamless and responsive user experience.
+This approach enables the bot to handle multiple incoming updates concurrently, ensuring a seamless and responsive user experience.
 
 
 
@@ -22,9 +22,9 @@ The library expects callback functions, such as <code>hello()</code> and <code>w
 | Command            | Description                                                                                         |
 |--------------------|-----------------------------------------------------------------------------------------------------|
 | `/hello`           | Greets the user.                                                                                    |
-| `/roll`            | When members of a group have equal claims to something—such as a piece of loot, a chest, or a                    resource node—they will roll for it; the player who rolls the highest number is the winner.         |
+| `/roll {dice}`            | When members of a group have equal claims to something—such as a piece of loot or a chest— they can roll for it; the player who rolls the highest number is the winner. Defaults to 100.         |
 | `/weather {city}`  | Get weather data through OpenWeatherMap API from any city.                                         |
-| `/google {query}`  | Get google search results for any query                                        |
+| `/google {query}`  | Get search results for any query using bs4 webscraping as Google doesn't provide any search-related APIs.                                        |
 
 
 ## **Setup**
