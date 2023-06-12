@@ -34,6 +34,7 @@ The library expects callback functions, such as <code>hello()</code> and <code>w
 - requests
 - python-telegram-bot
 - numpy
+- bs4
 
 **2. Get your keys and tokens:**
 - Head over to <a href="https://openweathermap.org">OpenWeatherMap</a> to retrieve a free API key.
