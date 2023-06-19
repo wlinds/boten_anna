@@ -1,4 +1,4 @@
-import json, requests
+import json, requests, threading
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, Updater
 from misc import *
@@ -46,7 +46,7 @@ async def roll_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     command_text = update.message.text.strip() # Extract the highest number from the command, if provided
     highest = 100  # Default highest number
 
-    print(f'{update.effective_user.first_name} requested /roll, {command_text=}.')
+    print(f'{update.effective_user.first_name} requested {command_text=}.')
 
     if len(command_text.split()) > 1:
         try:
@@ -66,12 +66,15 @@ async def roll_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     await update.message.reply_text(f'{update.effective_user.first_name} rolls {roll} (1-{highest})')
     print(f'Success. {roll=}.')
 
+
 async def hello(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """ Greets the user with welcome_message located in misc.py """
 
     print(f'{update.effective_user.first_name} requested /hello.')
     await update.message.reply_text(f'{welcome_message()}, {update.effective_user.first_name}')
     print(f'Success.')
+    
+
 
 async def googlar(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Calls google_search() located in misc.py"""
@@ -85,6 +88,41 @@ async def googlar(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
     search_results = google_search(query, verbose=True)
     await update.message.reply_text(search_results)
+
+
+async def start_timer(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Starts a timer for the given number of seconds"""
+
+    # TODO: Handle minutes and hours as well
+
+    args = context.args
+    if len(args) != 1:
+        await update.message.reply_text("Invalid timer command. Usage: /timer <seconds>")
+        return
+
+    try:
+        seconds = int(args[0])
+    except ValueError:
+        await update.message.reply_text("Invalid timer duration. Please provide a valid number of seconds.")
+        return
+
+    # Schedule the timer task
+    threading.Timer(seconds, timer_done, args=[update, update.effective_user.first_name]).start()
+
+    await update.message.reply_text(f"Timer started for {seconds} seconds.")
+    print(f"Timer set by {update.effective_user.first_name} for {seconds} seconds.")
+
+def timer_done(update: Update, user_name: str) -> None:
+    """Sends a notification when a timer is done"""
+
+    message = f"⏰ DING DONG! Timer set by {user_name} is done!"
+
+    requests.post(f"https://api.telegram.org/bot{TOKEN}/sendMessage", json={"chat_id": CHAT_ID, "text": message})
+    # Only ever use CHAT_ID here. Should be a better way to achieve this to avoid having to use CHAT_ID for this?
+    # Or we keep it, I mean it is a very simple way to send messages.
+    
+    print(message)
+
 
 def get_keys() -> tuple[str, str, str]:
     """Get keys from json.
@@ -111,7 +149,8 @@ if __name__ == "__main__":
         ("hello", hello),
         ("weather", weather_command),
         ("roll", roll_command),
-        ("google", googlar)
+        ("google", googlar),
+        ("timer", start_timer)
     ]
 
     for command, callback in list_of_handlers:
