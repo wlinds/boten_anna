@@ -22,10 +22,10 @@ This approach enables the bot to handle multiple incoming updates concurrently, 
 | Command            | Description                                                                                         |
 |--------------------|-----------------------------------------------------------------------------------------------------|
 | `/hello`           | Greets the user.                                                                                    |
-| `/roll {dice}`            | When members of a group have equal claims to something—such as a piece of loot or a chest— they can roll for it; the player who rolls the highest number is the winner. Defaults to 100.         |
+| `/roll {dice sides}`            | When members of a group have equal claims to something—such as a piece of loot or a chest— they can roll for it; the player who rolls the highest number is the winner. Defaults to 100.         |
 | `/weather {city}`  | Get weather data through OpenWeatherMap API from any city.                                         |
 | `/google {query}`  | Get search results for any query using bs4 webscraping as Google doesn't provide any search-related APIs.                                        |
-
+| `/timer {seconds}`  | A timer, a companion in our quest to tame chaos and find moments of rest. It guards our tasks, swift and keen, empowering focus, a serene routine. **TODO:** Handle min and hours as well.          
 
 ## **Setup**
 
@@ -39,6 +39,13 @@ This approach enables the bot to handle multiple incoming updates concurrently, 
 **2. Get your keys and tokens:**
 - Head over to <a href="https://openweathermap.org">OpenWeatherMap</a> to retrieve a free API key.
 
+
+- Get your Telegram chat_id for the chat you want to add the bot to:
+    - open web.telegram in browser
+    - right click on the group name on the left menu
+    - click 'inspect' button
+    - you will see the group id in the attribute data-peer-id="-xxxxxxxxxx" or peer="-xxxxxxxxxx"
+
 - With your Telegram account, execute <code>/new_bot</code> to user <code>@BotFather</code>. Copy the token to access the Telegram HTTP API.
 
 **3. Create your json-file:**\
@@ -47,6 +54,7 @@ Create a json file and name it keys.json, add to the same directory as the Pytho
 ```
 {
     "TOKEN": "your-token-string",
+    "CHAT_ID": "00000000",
     "WEATHER": "your-openweathermap-api-key"
 }
 ```
