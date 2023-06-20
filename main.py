@@ -123,6 +123,82 @@ def timer_done(update: Update, user_name: str) -> None:
     
     print(message)
 
+async def add_to_list(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Adds item to list."""
+
+    # Get the item from the user's message
+    item = " ".join(context.args)
+
+    # Check if the item is empty
+    if not item:
+        await update.message.reply_text("Please provide an item to add to the list.")
+        return
+
+    # Access or initialize the list in the context
+    if "list" not in context.chat_data:
+        context.chat_data["list"] = []
+
+    # Add the item to the list
+    context.chat_data["list"].append(item)
+
+    # Reply with a confirmation message
+    await update.message.reply_text(f"Item '{item}' added to the list.")
+
+
+async def remove_from_list(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Removes item from list."""
+
+    # Get the item to be removed from the user's message
+    item = " ".join(context.args)
+
+    # Check if the item is empty
+    if not item:
+        await update.message.reply_text("Please provide an item to remove from the list.")
+        return
+
+    # Access the list in the context
+    if "list" not in context.chat_data or not context.chat_data["list"]:
+        await update.message.reply_text("The list is empty.")
+        return
+
+    # Remove the item from the list if it exists
+    if item in context.chat_data["list"]:
+        context.chat_data["list"].remove(item)
+        await update.message.reply_text(f"Item '{item}' removed from the list.")
+    else:
+        await update.message.reply_text(f"Item '{item}' not found in the list.")
+
+
+async def clear_list(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Clears the entire list."""
+
+    # Access the list in the context
+    if "list" not in context.chat_data or not context.chat_data["list"]:
+        await update.message.reply_text("The list is already empty.")
+        return
+
+    # Clear the list
+    context.chat_data["list"] = []
+    await update.message.reply_text("The list has been cleared.")
+
+  
+async def display_list(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Displays the items in the list."""
+
+    # Access the list in the context
+    if "list" not in context.chat_data or not context.chat_data["list"]:
+        await update.message.reply_text("The list is empty.")
+        return
+
+    # Get the items from the list
+    items = context.chat_data["list"]
+
+    # Format the items as a string
+    items_str = "\n".join(items)
+
+    # Send the formatted list as a message
+    await update.message.reply_text(f"The list contains:\n{items_str}")
+
 
 def get_keys() -> tuple[str, str, str]:
     """Get keys from json.
@@ -136,7 +212,7 @@ def get_keys() -> tuple[str, str, str]:
     }
     """
     
-    with open('keys.json') as f:
+    with open('keys-groupchat.json') as f:
         keys = json.load(f)
     return keys["TOKEN"], keys["CHAT_ID"], keys["WEATHER"]
     # CHAT_ID is currently not used and can be removed. It might be used in the future however.
@@ -145,15 +221,23 @@ if __name__ == "__main__":
     TOKEN, CHAT_ID, WEATHER_KEY = get_keys()
     bot = ApplicationBuilder().token(TOKEN).build()
 
-    list_of_handlers = [
+    handlers = [
         ("hello", hello),
         ("weather", weather_command),
         ("roll", roll_command),
         ("google", googlar),
-        ("timer", start_timer)
+        ("timer", start_timer),
+        ("add", add_to_list),
+        ("remove", remove_from_list),
+        ("clear", clear_list),
+        ("display", display_list)
     ]
 
-    for command, callback in list_of_handlers:
+for command, callback in handlers:
+    bot.add_handler(CommandHandler(command, callback))
+
+
+    for command, callback in handlers:
         bot.add_handler(CommandHandler(command, callback))
 
 
