@@ -19,13 +19,25 @@ This approach enables the bot to handle multiple incoming updates concurrently, 
 
 ## **Available commands**
 
-| Command            | Description                                                                                         |
+| General commands            | Description                                                                                         |
 |--------------------|-----------------------------------------------------------------------------------------------------|
 | `/hello`           | Greets the user.                                                                                    |
 | `/roll {dice sides}`            | When members of a group have equal claims to something—such as a piece of loot or a chest— they can roll for it; the player who rolls the highest number is the winner. Defaults to 100.         |
-| `/weather {city}`  | Get weather data through OpenWeatherMap API from any city.                                         |
+| `/weather {city}`  | Get weather data through OpenWeatherMap API for any city.                                         |
 | `/google {query}`  | Get search results for any query using bs4 webscraping as Google doesn't provide any search-related APIs.                                        |
-| `/timer {seconds}`  | A timer, a companion in our quest to tame chaos and find moments of rest. It guards our tasks, swift and keen, empowering focus, a serene routine. **TODO:** Handle min and hours as well.          
+| `/timer {seconds}`  | A timer, a companion in our quest to tame chaos and find moments of rest. It guards our tasks, swift and keen, empowering focus, a serene routine. **TODO:** Handle min and hours as well.     
+| `/pollen` | Displays current pollen levels for Gothenburg, Sweden. **TODO:** Add custom cities.
+
+The bot also supports keeping a custom list of items:
+
+| List commands | Description       |
+|----------|---------------------------------|
+|`/add`    | add_to_list
+|`/remove` | remove_from_list
+|`/clear`  | clear_list
+|`/display`| display_list
+
+**TODO:** Name lists & support creation of multiple lists.
 
 ## **Setup**
 
