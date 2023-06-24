@@ -1,8 +1,10 @@
-import json, requests, threading
+import json, requests, threading, schedule
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, Updater
 from misc import *
 import numpy as np
+from pollen import pollen_gbg
+import sr
 
 
 async def weather_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -118,6 +120,7 @@ def timer_done(update: Update, user_name: str) -> None:
     message = f"⏰ DING DONG! Timer set by {user_name} is done!"
 
     requests.post(f"https://api.telegram.org/bot{TOKEN}/sendMessage", json={"chat_id": CHAT_ID, "text": message})
+
     # Only ever use CHAT_ID here. Should be a better way to achieve this to avoid having to use CHAT_ID for this?
     # Or we keep it, I mean it is a very simple way to send messages.
     
@@ -200,6 +203,13 @@ async def display_list(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     await update.message.reply_text(f"The list contains:\n{items_str}")
 
 
+async def pollenrapport(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    text, link = pollen_gbg()
+    message = f"{text}\n\n{link}"
+
+    await update.message.reply_text(message)
+
+
 def get_keys() -> tuple[str, str, str]:
     """Get keys from json.
 
@@ -215,7 +225,6 @@ def get_keys() -> tuple[str, str, str]:
     with open('keys-groupchat.json') as f:
         keys = json.load(f)
     return keys["TOKEN"], keys["CHAT_ID"], keys["WEATHER"]
-    # CHAT_ID is currently not used and can be removed. It might be used in the future however.
 
 if __name__ == "__main__":
     TOKEN, CHAT_ID, WEATHER_KEY = get_keys()
@@ -230,17 +239,12 @@ if __name__ == "__main__":
         ("add", add_to_list),
         ("remove", remove_from_list),
         ("clear", clear_list),
-        ("display", display_list)
+        ("display", display_list),
+        ("pollen", pollenrapport)
     ]
-
-for command, callback in handlers:
-    bot.add_handler(CommandHandler(command, callback))
-
 
     for command, callback in handlers:
         bot.add_handler(CommandHandler(command, callback))
 
-
     print('Bot is running.')
     bot.run_polling()
-
