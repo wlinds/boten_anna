@@ -26,7 +26,8 @@ This approach enables the bot to handle multiple incoming updates concurrently, 
 | `/weather {city}`  | Get weather data through OpenWeatherMap API for any city.                                         |
 | `/google {query}`  | Get search results for any query using bs4 webscraping as Google doesn't provide any search-related APIs.                                        |
 | `/timer {seconds}`  | A timer, a companion in our quest to tame chaos and find moments of rest. It guards our tasks, swift and keen, empowering focus, a serene routine. **TODO:** Handle min and hours as well.     
-| `/pollen` | Displays current pollen levels for Gothenburg, Sweden. **TODO:** Add custom cities.
+| `/pollen` | Displays current pollen levels for Gothenburg. **TODO:** Add custom cities.
+| `/gmt` | Converts {timezone} {hh:mm} to GMT+2 🇸🇪
 
 The bot also supports keeping a custom list of items:
 
