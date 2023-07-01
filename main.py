@@ -1,9 +1,10 @@
 import json, requests, threading, schedule
 from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, Updater
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, Updater, MessageHandler
 from misc import *
 import numpy as np
 from pollen import pollen_gbg
+from time_conversions import convert_to_gmt_2
 import sr
 
 
@@ -77,7 +78,6 @@ async def hello(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     print(f'Success.')
     
 
-
 async def googlar(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Calls google_search() located in misc.py"""
 
@@ -126,6 +126,7 @@ def timer_done(update: Update, user_name: str) -> None:
     
     print(message)
 
+
 async def add_to_list(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Adds item to list."""
 
@@ -146,7 +147,6 @@ async def add_to_list(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
 
     # Reply with a confirmation message
     await update.message.reply_text(f"Item '{item}' added to the list.")
-
 
 async def remove_from_list(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Removes item from list."""
@@ -171,7 +171,6 @@ async def remove_from_list(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     else:
         await update.message.reply_text(f"Item '{item}' not found in the list.")
 
-
 async def clear_list(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Clears the entire list."""
 
@@ -183,7 +182,6 @@ async def clear_list(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
     # Clear the list
     context.chat_data["list"] = []
     await update.message.reply_text("The list has been cleared.")
-
   
 async def display_list(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Displays the items in the list."""
@@ -204,13 +202,20 @@ async def display_list(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 
 
 async def pollenrapport(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    text, link = pollen_gbg()
+    text, link = pollen_gbg() #TODO: make city/region an argument
     message = f"{text}\n\n{link}"
 
     await update.message.reply_text(message)
 
 
-def get_keys() -> tuple[str, str, str]:
+async def time_convert(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    input_time = " ".join(context.args)
+    result = convert_to_gmt_2(input_time)
+
+    await update.message.reply_text(result)
+
+
+def get_keys(my_key='keys-groupchat.json') -> tuple[str, str, str]:
     """Get keys from json.
 
     Create your own keys.json with this structure:
@@ -222,7 +227,7 @@ def get_keys() -> tuple[str, str, str]:
     }
     """
     
-    with open('keys-groupchat.json') as f:
+    with open(my_key) as f:
         keys = json.load(f)
     return keys["TOKEN"], keys["CHAT_ID"], keys["WEATHER"]
 
@@ -240,7 +245,8 @@ if __name__ == "__main__":
         ("remove", remove_from_list),
         ("clear", clear_list),
         ("display", display_list),
-        ("pollen", pollenrapport)
+        ("pollen", pollenrapport),
+        ("gmt", time_convert),
     ]
 
     for command, callback in handlers:
