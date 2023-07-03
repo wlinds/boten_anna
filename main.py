@@ -6,6 +6,7 @@ import numpy as np
 from pollen import pollen_gbg
 from time_conversions import convert_to_gmt_2
 import sr
+from modelz import orca_mini_3b
 
 
 async def weather_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -214,8 +215,14 @@ async def time_convert(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 
     await update.message.reply_text(result)
 
+async def anna(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    input_prompt = " ".join(context.args)
+    result = orca_mini_3b(input_prompt, 64, .7, 40, .2, 1.8, 128, 8, None, False)
 
-def get_keys(my_key='keys-groupchat.json') -> tuple[str, str, str]:
+    await update.message.reply_text(result)
+
+
+def get_keys(my_key='keys.json') -> tuple[str, str, str]:
     """Get keys from json.
 
     Create your own keys.json with this structure:
@@ -232,6 +239,8 @@ def get_keys(my_key='keys-groupchat.json') -> tuple[str, str, str]:
     return keys["TOKEN"], keys["CHAT_ID"], keys["WEATHER"]
 
 if __name__ == "__main__":
+
+    print(orca_mini_3b("test", 64, .7, 40, .2, 1.8, 128, 8, None, False))
     TOKEN, CHAT_ID, WEATHER_KEY = get_keys()
     bot = ApplicationBuilder().token(TOKEN).build()
 
@@ -247,6 +256,7 @@ if __name__ == "__main__":
         ("display", display_list),
         ("pollen", pollenrapport),
         ("gmt", time_convert),
+        ("anna", anna),
     ]
 
     for command, callback in handlers:
