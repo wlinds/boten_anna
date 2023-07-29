@@ -1,5 +1,6 @@
 *keys.json
-*keys-groupchat.json
+*keys-groupchat
+*user-account.json
 *.DS_Store
 
 # Byte-compiled / optimized / DLL files
