@@ -68,7 +68,8 @@ Create a json file and name it keys.json, add to the same directory as the Pytho
 {
     "TOKEN": "your-token-string",
     "CHAT_ID": "00000000",
-    "WEATHER": "your-openweathermap-api-key"
+    "WEATHER": "your-openweathermap-api-key",
+    "GITHUB": "your-github-token"
 }
 ```
 
