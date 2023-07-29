@@ -14,6 +14,9 @@ def get_following_users(user, token):
 
 def check_for_recent_commits(user, following_users, token):
     """Checks if the followed users have made any recent commits."""
+
+    ## Actually this is really slow because it checks ALL commits ever made by given users.
+    ## Instead we should limit the request with params during the api call TODO !!
     time_now = datetime.datetime.utcnow()
     commits = []
     for u in following_users:
