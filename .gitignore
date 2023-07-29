@@ -1,6 +1,7 @@
 *keys.json
 *keys-groupchat
 *user-account.json
+*some.py
 *.DS_Store
 
 # Byte-compiled / optimized / DLL files
