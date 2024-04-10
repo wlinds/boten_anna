@@ -17,19 +17,25 @@ def pollen_gbg():
     feed_title = soup.find('title').text
     feed_link = soup.find('link').text
 
+    if feed_title == "Felsida 404 - Pollenrapporten":
+        return "An error occured: 404", feed_url
+
     print('Feed Title:', feed_title)
     print('Feed Link:', feed_link)
 
     # Iterate over all entries
     entries = soup.find_all('item')
 
-    for entry in entries:
-        entry_title = entry.find('title').text
-        entry_link = entry.find('link').text
+    try:
+        for entry in entries:
+            entry_title = entry.find('title').text
+            entry_link = entry.find('link').text
 
-        print('---')
-        print('Entry Title:', entry_title)
-        print('Entry Link:', entry_link)
+            print('---')
+            print('Entry Title:', entry_title)
+            print('Entry Link:', entry_link)
+    except Exception as e:
+        return f"An error occured: {e}", feed_url
 
     return entry_title, entry_link
 

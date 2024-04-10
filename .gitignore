@@ -3,6 +3,7 @@
 *user-account.json
 *some.py
 *.DS_Store
+*user-account.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
