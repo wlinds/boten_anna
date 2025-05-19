@@ -1,6 +1,15 @@
 from datetime import datetime, timedelta
 
-def convert_to_gmt_2(input_time):
+def convert_to_gmt(input_time):
+    """
+    Convert time from a specified timezone to GMT+2.
+    
+    Args:
+        input_time (str): Input time in format 'TIMEZONE HH:MM'
+        
+    Returns:
+        str: Converted time or error message
+    """
     timezone_offsets = {
         'GMT': 0,
         'UTC': 0,
@@ -57,8 +66,3 @@ def convert_to_gmt_2(input_time):
         return f"{converted_time_str} ({offset_str} hours from {time_str})"
     except ValueError as e:
         return str(e)
-
-
-if __name__ == "__main__":
-    print(convert_to_gmt_2('aet 12:00'))
-    print(convert_to_gmt_2('PNT 12:00'))
