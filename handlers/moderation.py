@@ -4,7 +4,7 @@ from telegram import Update
 from telegram.ext import ContextTypes
 import traceback
 
-from services.lyrics_service import get_kick_line
+from services.lyrics_service import lyrics_service
 from config.constants import (
     SPAM_THRESHOLD, SPAM_TIMEFRAME, SPAM_WARNING_COOLDOWN, AUTO_KICK_THRESHOLD
 )
@@ -106,7 +106,6 @@ async def handle_spam_message(update: Update, context: ContextTypes.DEFAULT_TYPE
 async def attempt_auto_kick(update: Update, context: ContextTypes.DEFAULT_TYPE, 
                            user_id: str, user_name: str) -> None:
     """Attempt to auto-kick a user who has received too many spam warnings"""
-
     warning_count = get_spam_warning_count(user_id)
     
     # STRICT CHECK - only proceed if warning count is at least the threshold
@@ -121,7 +120,7 @@ async def attempt_auto_kick(update: Update, context: ContextTypes.DEFAULT_TYPE,
     if warning_count < AUTO_KICK_THRESHOLD:
         print(f"Warning: Attempted to kick {user_name} but warning count is only {warning_count}")
         return
-        
+
     try:
         # Check if bot is admin
         chat_admins = await context.bot.get_chat_administrators(update.effective_chat.id)
@@ -129,8 +128,8 @@ async def attempt_auto_kick(update: Update, context: ContextTypes.DEFAULT_TYPE,
         
         bot_is_admin = any(admin.user.id == bot_me.id for admin in chat_admins)
         
+        if bot_is_admin:
             # Generate kick message using lyrics
-            kick_line = get_kick_line()
             kick_line = lyrics_service.get_kick_line()
             kick_message = f"{kick_line} {user_name} har spammat för mycket. Jag röjer upp i våran kanal 🎵!"
 
