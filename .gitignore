@@ -5,6 +5,9 @@
 *.DS_Store
 *user-account.json
 
+data/chat_histories.json
+data/personality_data.json
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
