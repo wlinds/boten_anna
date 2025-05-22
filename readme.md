@@ -13,9 +13,20 @@ Jag vill berätta för dig, att jag känner en bot~*
 
 This Telegram group chat bot implement asynchronous functions, allowing for concurrent execution of multiple tasks without blocking the program's execution. The <a href="https://docs.python-telegram-bot.org/en/stable/telegram.ext.html">telegram.ext library</a> builds upon the <a href="https://docs.python.org/3/library/asyncio.html">asyncio library</a> to handle asynchronous operations. 
 
-The bot is enhanced with OpenAI integration to provide natural language understanding and personality capabilities, making it more conversational and responsive to users.
+The bot is enhanced with OpenAI integration to provide natural language understanding and personality capabilities, making it conversational and responsive to users.
+
+> ⚠️ Update TELEGRAM_CHAT_ID after Group Migration
+>
+>If your Telegram group is migrated to a supergroup, the chat ID will change (it will typically become a larger negative number starting with -100). When this happens, you must update the TELEGRAM_CHAT_ID in your .env to the new value. More info: https://core.telegram.org/api/channel#supergroups
 
 ## **Available commands**
+
+| NLP and AI Commands | Description       |
+|----------|---------------------------------|
+|`/chat {message}`| Directly chat with Anna (Legacy) |
+|`/status` | View Anna's personality stats and learning progress |
+|`/personality {trait} {value}` | Adjust Anna's personality traits: emoji_usage, humor_style, talkativeness, random_reply |
+|`/kick` | (Admin only) Kick a user from the chat with a personalized message from Anna |
 
 | General commands            | Description                                                                                         |
 |--------------------|-----------------------------------------------------------------------------------------------------|
@@ -35,13 +46,6 @@ The bot is enhanced with OpenAI integration to provide natural language understa
 |`/display`       | Display all items in the list
 
 **TODO:** Name lists & support creation of multiple lists.
-
-| NLP and AI Commands | Description       |
-|----------|---------------------------------|
-|`/chat {message}`| Directly chat with Anna (Legacy) |
-|`/status` | View Anna's personality stats and learning progress |
-|`/personality {trait} {value}` | Adjust Anna's personality traits: emoji_usage, humor_style, talkativeness, random_reply |
-|`/kick` | (Admin only) Kick a user from the chat with a personalized message from Anna |
 
 ## **Key Features**
 
