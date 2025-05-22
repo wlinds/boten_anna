@@ -1,4 +1,5 @@
-import logging
+import logging, os
+from utils.env_utils import validate_required_vars
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters
 from utils.env_utils import get_env_vars
 from handlers.command_handlers import register_command_handlers
@@ -12,7 +13,14 @@ logging.basicConfig(
 )
 
 def main():
-    TOKEN, CHAT_ID, WEATHER_KEY, OPENAI_KEY, GOOGLE_KEY, _ = get_env_vars()
+    try:
+        validate_required_vars()
+        print("✅ All required environment variables are set")
+    except EnvironmentError as e:
+        print(f"❌ {e}")
+        return
+
+    TOKEN = os.getenv('TELEGRAM_TOKEN')
     bot = ApplicationBuilder().token(TOKEN).build()
     register_command_handlers(bot)
     bot.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))

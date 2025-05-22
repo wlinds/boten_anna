@@ -41,7 +41,7 @@ def google_search(query: str, verbose: bool = False) -> str:
         return "Please provide a search query."
 
     try:
-        _, _, _, _, GOOGLE_API_KEY, _ = get_env_vars()
+        GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
         GOOGLE_CSE_ID = os.getenv('GOOGLE_CSE_ID', '')
         
         if not GOOGLE_API_KEY or not GOOGLE_CSE_ID:

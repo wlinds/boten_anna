@@ -1,5 +1,5 @@
 import datetime
-import random
+import random, os
 import logging
 import pytz
 from telegram import Bot

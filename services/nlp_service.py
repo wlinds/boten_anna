@@ -13,7 +13,7 @@ def load_character_config():
         return json.load(f)
 
 CHARACTER_CONFIG = load_character_config()
-_, _, _, OPENAI_API_KEY, _, _ = get_env_vars()
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=OPENAI_API_KEY)
 
 # Initialize chat history storage

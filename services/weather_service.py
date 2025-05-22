@@ -1,7 +1,5 @@
 import requests
-from utils.env_utils import get_env_vars
-
-_, _, WEATHER_KEY, _, _, _ = get_env_vars()
+import os
 
 def get_weather(city):
     """
@@ -16,7 +14,12 @@ def get_weather(city):
     if not city:
         return "Please provide a city or region."
 
-    url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={WEATHER_KEY}"
+    # Get API key when needed, not at import time
+    weather_key = os.getenv('OPENWEATHERMAP_API_KEY')
+    if not weather_key:
+        return "Weather service not configured. Missing OPENWEATHERMAP_API_KEY."
+
+    url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={weather_key}"
     
     try:
         response = requests.get(url)
