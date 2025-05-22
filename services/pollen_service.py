@@ -3,7 +3,6 @@ import json, os
 from dataclasses import dataclass
 from typing import List, Dict, Any, Optional
 from datetime import datetime
-from utils.env_utils import get_env_vars
 
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 

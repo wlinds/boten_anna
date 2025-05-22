@@ -8,7 +8,6 @@ import os
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 
-from utils.env_utils import get_env_vars
 from utils.misc_utils import welcome_message, google_search
 from utils.time_utils import convert_to_gmt
 from services.weather_service import get_weather
@@ -18,7 +17,6 @@ from services.lyrics_service import lyrics_service
 from data.chat_store import chat_store
 from data.personality_trainer import personality_trainer
 
-TOKEN, CHAT_ID, _, _, _, _ = get_env_vars()
 
 async def hello(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Greets the user with a welcome_message located in misc.py"""

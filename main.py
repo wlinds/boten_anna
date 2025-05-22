@@ -1,7 +1,6 @@
 import logging, os
 from utils.env_utils import validate_required_vars
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters
-from utils.env_utils import get_env_vars
 from handlers.command_handlers import register_command_handlers
 from handlers.message_handlers import handle_message
 from handlers.scheduled_tasks import schedule_tasks
