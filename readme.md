@@ -136,12 +136,63 @@ The bot employs a personality learning system that:
 
 You can view the learning progress using the `/status` command and manually adjust traits with `/personality`.
 
+## Troubleshooting
+
+### Common Issues
+
+1. **"ModuleNotFoundError: No module named 'openai'"**
+   - Run `pip install openai` to install the OpenAI Python package.
+
+2. **"ModuleNotFoundError: No module named 'dotenv'"**
+   - Run `pip install python-dotenv` to install the python-dotenv package.
+
+3. **"openai.error.AuthenticationError: Incorrect API key provided"**
+   - Check your OpenAI API key in the .env file is valid and has not expired.
+
+4. **"FileNotFoundError: [Errno 2] No such file or directory: '.env'"**
+   - Make sure you've created the .env file in the same directory as the script.
+   - You can copy .env.example to .env and fill in your API keys.
+
+5. **"TelegramError: Bad Request: not enough rights to ban/unban user"**
+   - The bot needs to be an administrator in the chat to kick users.
+   - Make sure the bot has the appropriate permissions in the group.
+
+6. **"Error getting pollen data: API error: 403"**
+   - Your Google API key may not have the Pollen API enabled.
+   - Go to the Google Cloud Console, find your project, and enable the Pollen API.
+
+### API Key Setup Help
+
+#### OpenAI API
+1. Go to https://platform.openai.com/
+2. Sign up or log in
+3. Go to "API Keys" in your account
+4. Create a new secret key
+5. Copy the key to your keys.json file
+
+#### Google Pollen API
+1. Go to https://console.cloud.google.com/
+2. Create a new project or select an existing one
+3. Search for "Pollen API" in the API Library
+4. Enable the API
+5. Go to Credentials and create an API key
+6. Copy the key to your keys.json file
+
+## Configuration Options
+
+### Personality Configuration
+
+You can modify the bot's personality by editing `character_config.json`. Key areas to customize:
+
+- `demographics`: Basic information about the bot
+- `linguistic_profile`: How the bot talks and communicates
+- `pragmatics`: Conversation style and emoji usage
+- `psychographics`: Values, fears, and motivations
+
 ## **Future Improvements**
 
 - Support for multiple named lists
 - Integration with image generation APIs
 - Voice message processing
-- Multi-language support beyond Swedish and English
 - Integration with more external APIs for enhanced functionality
-- Maybe hook up an SQL table for user data, so she can remember stuff about users?
 - M̵̙͠a̸͓̕k̵̖̊e̴̛͚ ̵̤̈h̷͍̏e̵̗̕r̵̯͠ ̶̺͐s̴͕͝ḙ̷̌ṇ̸̔t̴̬͂i̴̫̍e̸̞̓n̵͉̽t̵̰̿
