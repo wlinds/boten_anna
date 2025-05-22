@@ -1,7 +1,6 @@
 import os, json, time, random
 from typing import List, Dict, Any, Optional
 from openai import OpenAI
-from utils.env_utils import get_env_vars
 from config.constants import MAX_HISTORY_LENGTH
 from data.personality_trainer import personality_trainer
 from services.lyrics_service import lyrics_service

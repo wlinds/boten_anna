@@ -5,7 +5,6 @@ import pytz
 from telegram import Bot
 from telegram.ext import ContextTypes
 
-from utils.env_utils import get_env_vars
 from services.weather_service import get_weather
 from services.lyrics_service import lyrics_service
 
