@@ -4,6 +4,7 @@ from utils.env_utils import get_env_vars
 from handlers.command_handlers import register_command_handlers
 from handlers.message_handlers import handle_message
 from handlers.scheduled_tasks import schedule_tasks
+from services.scheduler_service import scheduler_service
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -16,7 +17,7 @@ def main():
     register_command_handlers(bot)
     bot.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     schedule_tasks(bot)
-
+    scheduler_service.schedule_jobs(bot.job_queue)
     print('[🤖] Bot is running.')
     bot.run_polling()
 
