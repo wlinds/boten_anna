@@ -1,0 +1,9 @@
+python-telegram-bot
+requests
+numpy
+beautifulsoup4
+openai
+python-dotenv
+lxml
+pytz
+APScheduler
