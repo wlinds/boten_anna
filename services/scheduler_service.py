@@ -14,7 +14,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-CHAT_ID = os.getenv('TELEGRAM_CHAT_ID'),
+CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 SEND_MORNING_UPDATES = os.getenv('SEND_MORNING_UPDATES', True)
 DEFAULT_CITY = os.getenv('DEFAULT_CITY', 'gothenburg')
 TIMEZONE = os.getenv('TIMEZONE', 'Europe/Stockholm')
@@ -28,9 +28,8 @@ class SchedulerService:
     def schedule_jobs(self, job_queue):
         """Schedule all jobs"""
         if SEND_MORNING_UPDATES:
-            job_time = datetime.time(hour=9, minute=14, tzinfo=self.timezone)
+            job_time = datetime.time(hour=12, minute=00, tzinfo=self.timezone)
             job_queue.run_daily(self.send_morning_update, job_time)
-            logger.info(f"Scheduled morning updates daily at 8:00 AM {TIMEZONE}")
         
         # Schedule other jobs here 
         
