@@ -14,7 +14,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-CHAT_ID = os.getenv('TELEGRAM_CHAT_ID'),
+CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 SEND_MORNING_UPDATES = os.getenv('SEND_MORNING_UPDATES', True)
 DEFAULT_CITY = os.getenv('DEFAULT_CITY', 'gothenburg')
 TIMEZONE = os.getenv('TIMEZONE', 'Europe/Stockholm')
