@@ -14,9 +14,147 @@ from services.weather_service import get_weather
 from services.pollen_service import get_pollen_for_location
 from services.nlp_service import generate_response, save_chat_histories
 from services.lyrics_service import lyrics_service
+from services.user_service import user_service
 from data.chat_store import chat_store
 from data.personality_trainer import personality_trainer
+from services.reputation_service import reputation_service
 
+async def list_users(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """List all known users"""
+    users = user_service.get_all_users()
+    
+    if not users:
+        await update.message.reply_text("Inga användare kända än.")
+        return
+    
+    user_list = []
+    for user_id, user_data in users.items():
+        display_name = user_service.get_user_display_name(user_id)
+        message_count = user_data.get('message_count', 0)
+        username = f"@{user_data['username']}" if user_data.get('username') else "No username"
+        
+        user_list.append(f"• {display_name} ({username}) - {message_count} meddelanden")
+    
+    message = f"👥 Kända användare ({len(users)}):\n\n" + "\n".join(user_list[:20])
+    if len(users) > 20:
+        message += f"\n\n... och {len(users) - 20} till"
+    
+    await update.message.reply_text(message)
+
+async def who_is(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Look up information about a user"""
+    if not context.args:
+        await update.message.reply_text("Användning: /whois <namn eller @användarnamn>")
+        return
+    
+    query = " ".join(context.args)
+    matches = user_service.search_users(query)
+    
+    if not matches:
+        await update.message.reply_text(f"Ingen användare hittad för '{query}'")
+        return
+    
+    if len(matches) == 1:
+        user = matches[0]
+        info = []
+        info.append(f"👤 **{user_service.get_user_display_name(user['user_id'])}**")
+        
+        if user.get('username'):
+            info.append(f"Användarnamn: @{user['username']}")
+        if user.get('last_name'):
+            info.append(f"Efternamn: {user['last_name']}")
+        
+        info.append(f"Meddelanden: {user.get('message_count', 0)}")
+        info.append(f"Senast sedd: {user.get('last_seen', 'Okänt')}")
+        
+        await update.message.reply_text("\n".join(info))
+    else:
+        user_list = [f"• {user_service.get_user_display_name(user['user_id'])}" for user in matches[:10]]
+        message = f"Hittade {len(matches)} användare:\n\n" + "\n".join(user_list)
+        await update.message.reply_text(message)
+
+async def user_stats(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Show user statistics"""
+    users = user_service.get_all_users()
+    active_users = user_service.get_active_users(7)  # Last 7 days
+    
+    total_messages = sum(user.get('message_count', 0) for user in users.values())
+    top_users = sorted(users.items(), key=lambda x: x[1].get('message_count', 0), reverse=True)[:5]
+    
+    stats = [
+        f"👥 Användare: {len(users)}",
+        f"🟢 Aktiva (7 dagar): {len(active_users)}",
+        f"💬 Totala meddelanden: {total_messages}",
+        f"",
+        f"🏆 **Mest aktiva:**"
+    ]
+    
+    for user_id, user_data in top_users:
+        display_name = user_service.get_user_display_name(user_id)
+        message_count = user_data.get('message_count', 0)
+        stats.append(f"• {display_name}: {message_count} meddelanden")
+    
+    await update.message.reply_text("\n".join(stats))
+
+async def reputation_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Show user's reputation with Anna"""
+    user_id = str(update.effective_user.id)
+    
+    if context.args:
+        # Look up another user
+        query = " ".join(context.args)
+        matches = user_service.search_users(query)
+        if matches:
+            user_id = matches[0]['user_id']
+        else:
+            await update.message.reply_text(f"Ingen användare hittad för '{query}'")
+            return
+    
+    rep = reputation_service.get_user_reputation(user_id)
+    user_name = user_service.get_user_display_name(user_id)
+    
+    # Create reputation report
+    relationship_emojis = {
+        'beloved': '💕', 'friend': '😊', 'liked': '🙂', 'neutral': '😐',
+        'annoying': '😒', 'disliked': '😠', 'enemy': '👺'
+    }
+    
+    report = [
+        f"📊 **{user_name}s Reputation med Anna**",
+        f"",
+        f"Status: {rep['relationship_status'].title()} {relationship_emojis.get(rep['relationship_status'], '🤖')}",
+        f"Totalpoäng: {rep['total_score']}",
+        f"",
+        f"**Traits:**"
+    ]
+    
+    for trait, value in rep['traits'].items():
+        emoji = "📈" if value > 5 else "📉" if value < -2 else "➡️"
+        report.append(f"{emoji} {trait.title()}: {value}")
+    
+    report.append(f"\n💭 **Annas åsikt:** {reputation_service.get_opinion_about_user(user_id)}")
+    
+    await update.message.reply_text("\n".join(report))
+
+async def leaderboard_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Show reputation leaderboard"""
+    leaderboard = reputation_service.get_leaderboard(10)
+    
+    if not leaderboard:
+        await update.message.reply_text("Ingen reputationdata än!")
+        return
+    
+    report = ["🏆 **Annas Favoriter**", ""]
+    
+    for i, (user_id, rep_data) in enumerate(leaderboard, 1):
+        user_name = user_service.get_user_display_name(user_id)
+        score = rep_data['total_score']
+        status = rep_data['relationship_status']
+        
+        emoji = "👑" if i == 1 else "🥈" if i == 2 else "🥉" if i == 3 else f"{i}."
+        report.append(f"{emoji} {user_name}: {score} pts ({status})")
+    
+    await update.message.reply_text("\n".join(report))
 
 async def hello(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Greets the user with a welcome_message located in misc.py"""
@@ -419,6 +557,8 @@ async def kick_user(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         await update.message.reply_text(f"Failed to kick user: {str(e)}")
         print(f"Failed to kick user: {str(e)}")
 
+
+
 def register_command_handlers(bot):
     """Register all command handlers with the bot application"""
     handlers = [
@@ -438,6 +578,13 @@ def register_command_handlers(bot):
         ("status", bot_status),
         ("personality", toggle_personality),
         ("kick", kick_user),
+        ("users", list_users),
+        ("whois", who_is),
+        ("stats", user_stats),
+        ("reputation", reputation_command),
+        ("rep", reputation_command),
+        ("leaderboard", leaderboard_command),
+        ("rankings", leaderboard_command),
     ]
 
     # Register command handlers

@@ -7,6 +7,7 @@ from telegram.ext import ContextTypes
 
 from services.weather_service import get_weather
 from services.lyrics_service import lyrics_service
+from services.user_service import user_service
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -28,7 +29,7 @@ class SchedulerService:
     def schedule_jobs(self, job_queue):
         """Schedule all jobs"""
         if SEND_MORNING_UPDATES:
-            job_time = datetime.time(hour=12, minute=00, tzinfo=self.timezone)
+            job_time = datetime.time(hour=8, minute=00, tzinfo=self.timezone)
             job_queue.run_daily(self.send_morning_update, job_time)
         
         # Schedule other jobs here 
@@ -59,8 +60,23 @@ class SchedulerService:
                 weather_info = f"Vädret i {DEFAULT_CITY}: {desc}, {temp:.1f}°C"
         except Exception as e:
             logger.error(f"Error getting weather for morning update: {e}")
-            
-        message = f"{greeting}\n\n{date_str}\n{weather_info}\n\nHa en bra dag! 🌞"
+
+        active_users = user_service.get_active_users(7)
+        user_count = len(active_users)
+        
+        if user_count > 0:
+            # Mention some active users occasionally
+            if random.random() < 0.3 and user_count <= 7:  # 30% chance, small groups only
+                user_names = [user_service.get_user_display_name(uid) for uid in list(active_users.keys())[:3]]
+                personal_greeting = f"God morgon {', '.join(user_names)}!"
+            else:
+                personal_greeting = f"God morgon alla {user_count} aktiva chatmedlemmar!"
+        else:
+            personal_greeting = "God morgon!"
+
+        message = f"{personal_greeting}\n\n{date_str}\n{weather_info}\n\nHa en bra dag! 🌞"
+    
+
         
         try:
             await context.bot.send_message(chat_id=CHAT_ID, text=message)
