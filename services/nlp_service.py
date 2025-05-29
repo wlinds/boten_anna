@@ -4,6 +4,7 @@ from openai import OpenAI
 from config.constants import MAX_HISTORY_LENGTH
 from data.personality_trainer import personality_trainer
 from services.lyrics_service import lyrics_service
+from services.user_service import user_service
 
 def load_character_config():
     """Load the character configuration from file"""
@@ -171,6 +172,16 @@ def generate_response(chat_id: str, user_id: str, message_text: str, user_name: 
     if any(phrase in message_text.lower() for phrase in ["vem är du", "who are you", "berätta om dig", "tell me about yourself", "vad är du"]):
         identity_line = lyrics_service.get_identity_line()
         message_text = f"[Respond with a casual introduction that includes this line: {identity_line}] {message_text}"
+
+     # Get user information, we should probably improve this with more info
+    user_info = user_service.get_user(user_id)
+    display_name = user_service.get_user_display_name(user_id)
+    
+    # Add user context to the system prompt
+    user_context = f"The user's name is {display_name}."
+    if user_info and user_info.get('message_count', 0) > 50:
+        user_context += f" They are a regular in this chat with {user_info['message_count']} messages."
+
 
     # Create conversation context from recent history
     conversation = get_chat_context(chat_id)
