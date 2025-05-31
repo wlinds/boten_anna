@@ -1,42 +1,43 @@
-name: boten-anna
-services:
-  - name: bot
-    source_dir: /
-    github:
-      repo: wlinds/boten_anna
-      branch: DO_PROD
-    run_command: python -m boten_anna.main
-    environment_slug: python
-    instance_count: 1
-    instance_size_slug: basic-xxs
-    envs:
-      - key: TELEGRAM_TOKEN
-        scope: RUN_TIME
-        type: SECRET
-      - key: TELEGRAM_CHAT_ID
-        scope: RUN_TIME
-        type: SECRET
-      - key: OPENWEATHERMAP_API_KEY
-        scope: RUN_TIME
-        type: SECRET
-      - key: OPENAI_API_KEY
-        scope: RUN_TIME
-        type: SECRET
-      - key: GOOGLE_API_KEY
-        scope: RUN_TIME
-        type: SECRET
-      - key: GOOGLE_CSE_ID
-        scope: RUN_TIME
-        type: SECRET
-      - key: GITHUB_TOKEN
-        scope: RUN_TIME
-        type: SECRET
-      - key: SEND_MORNING_UPDATES
-        scope: RUN_TIME
-        value: "true"
-      - key: DEFAULT_CITY
-        scope: RUN_TIME
-        value: "gothenburg"
-      - key: TIMEZONE
-        scope: RUN_TIME
-        value: "Europe/Stockholm"
+ingress: {}
+name: botten-anna-2
+region: ams
+workers:
+- environment_slug: python
+  envs:
+  - key: TELEGRAM_TOKEN
+    scope: RUN_TIME
+    value: SECRET
+  - key: TELEGRAM_CHAT_ID
+    scope: RUN_TIME
+    value: SECRET
+  - key: OPENWEATHERMAP_API_KEY
+    scope: RUN_TIME
+    value: SECRET
+  - key: OPENAI_API_KEY
+    scope: RUN_TIME
+    value: SECRET
+  - key: GOOGLE_API_KEY
+    scope: RUN_TIME
+    value: SECRET
+  - key: GOOGLE_CSE_ID
+    scope: RUN_TIME
+    value: SECRET
+  - key: GITHUB_TOKEN
+    scope: RUN_TIME
+  - key: SEND_MORNING_UPDATES
+    scope: RUN_TIME
+    value: "true"
+  - key: DEFAULT_CITY
+    scope: RUN_TIME
+    value: gothenburg
+  - key: TIMEZONE
+    scope: RUN_TIME
+    value: Europe/Stockholm
+  github:
+    branch: DO_PROD
+    deploy_on_push: true
+    repo: wlinds/boten_anna
+  instance_count: 1
+  instance_size_slug: apps-s-1vcpu-0.5gb
+  name: anna-2-app
+  run_command: python main.py
