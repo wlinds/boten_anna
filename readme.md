@@ -90,7 +90,7 @@ As referenced in the original "Boten Anna" song, Anna can now actually "ban peop
 
 **1. Install necessary dependencies:**
 ```bash
-pip install python-telegram-bot requests lxml numpy bs4 openai python-dotenv
+pip install python-telegram-bot requests lxml numpy bs4 openai python-dotenv pytz APScheduler
 ```
 
 **2. Get your keys and tokens:**
