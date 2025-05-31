@@ -220,37 +220,24 @@ async def start_timer(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         await update.message.reply_text("Invalid timer duration. Please provide a valid number of seconds.")
         return
     
-    # Store the chat_id and user_name for when the timer completes
     chat_id = update.effective_chat.id
     user_name = update.effective_user.first_name
     
-    # Schedule the timer task with this specific chat's ID
-    threading.Timer(seconds, timer_done, args=[chat_id, user_name, context.bot]).start()
+    # Use job queue instead of threading
+    context.job_queue.run_once(
+        timer_callback, 
+        when=seconds, 
+        data={'chat_id': chat_id, 'user_name': user_name}
+    )
 
-    await update.message.reply_text(f"Timer started for {seconds} seconds.")
-    print(f"Timer set by {user_name} for {seconds} seconds.")
-
-def timer_done(chat_id: int, user_name: str, bot) -> None:
-    """Sends a notification when a timer is done"""
+async def timer_callback(context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Callback when timer expires"""
+    job_data = context.job.data
+    chat_id = job_data['chat_id']
+    user_name = job_data['user_name']
+    
     message = f"⏰ DING DONG! Timer set by {user_name} is done!"
-    
-    # Use the bot's async methods in a non-async function
-    import asyncio
-    
-    async def send_timer_notification():
-        await bot.send_message(chat_id=chat_id, text=message)
-    
-    # Create and run an event loop to send the message
-    try:
-        loop = asyncio.get_event_loop()
-    except RuntimeError:
-        # If there's no event loop in this thread, create one
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-    
-    loop.run_until_complete(send_timer_notification())
-    
-    print(message)
+    await context.bot.send_message(chat_id=chat_id, text=message)
 
 async def add_to_list(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Adds item to list"""
