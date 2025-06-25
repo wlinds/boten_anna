@@ -19,6 +19,9 @@ from data.chat_store import chat_store
 from data.personality_trainer import personality_trainer
 from services.reputation_service import reputation_service
 
+from handlers.soundcloud_handlers import *
+# Should probably split up handlers into separate files
+
 async def list_users(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """List all known users"""
     users = user_service.get_all_users()
@@ -545,10 +548,9 @@ async def kick_user(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         print(f"Failed to kick user: {str(e)}")
 
 
-
 def register_command_handlers(bot):
-    """Register all command handlers with the bot application"""
     handlers = [
+        # Legacy commands
         ("hello", hello),
         ("weather", weather_command),
         ("roll", roll_command),
@@ -560,6 +562,7 @@ def register_command_handlers(bot):
         ("display", display_list),
         ("pollen", pollenrapport),
         ("gmt", time_convert),
+    
         # NLP-enabled commands
         ("chat", chat_with_anna),
         ("status", bot_status),
@@ -572,9 +575,21 @@ def register_command_handlers(bot):
         ("rep", reputation_command),
         ("leaderboard", leaderboard_command),
         ("rankings", leaderboard_command),
+        
+        # SoundCloud commands
+        ("sc_setup", soundcloud_setup),
+        ("sc_auth", soundcloud_auth), 
+        ("sc_status", soundcloud_status),
+        ("sc_follow", soundcloud_track),
+        ("sc_unfollow", soundcloud_untrack), 
+        ("sc_list", soundcloud_list),
+        ("sc_check", soundcloud_check),
+        ("sc_debug", soundcloud_debug),
+        ("sc_follow_all", soundcloud_track_bulk),
+        ("sc_refresh", soundcloud_refresh),
+        ("sc_retry_failed", soundcloud_retry_failed),
     ]
 
-    # Register command handlers
     for command, callback in handlers:
         bot.add_handler(CommandHandler(command, callback))
     
