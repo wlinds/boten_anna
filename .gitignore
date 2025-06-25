@@ -5,6 +5,7 @@
 *.DS_Store
 *user-account.json
 
+data/soundcloud_token.json
 data/chat_histories.json
 data/personality_data.json
 data/reputation.json
