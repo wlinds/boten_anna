@@ -578,10 +578,13 @@ def register_command_handlers(bot):
         
         # SoundCloud commands
         ("sc_setup", soundcloud_setup),
-        ("sc_auth", soundcloud_auth), 
+        ("sc_auth", soundcloud_auth),
         ("sc_status", soundcloud_status),
         ("sc_follow", soundcloud_track),
-        ("sc_unfollow", soundcloud_untrack), 
+        ("sc_track", soundcloud_track),  # Alias for sc_follow
+        ("sc_add", soundcloud_track),    # Alias for sc_follow
+        ("sc_unfollow", soundcloud_untrack),
+        ("sc_remove", soundcloud_untrack),  # Alias for sc_unfollow
         ("sc_list", soundcloud_list),
         ("sc_check", soundcloud_check),
         ("sc_debug", soundcloud_debug),
