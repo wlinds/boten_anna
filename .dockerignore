@@ -1,0 +1,38 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+.env.local
+.venv
+venv/
+ENV/
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Local data files (will be mounted as volumes in production)
+data/*.json
+!data/chat_lists.json
+
+# Sensitive files
+.env
+*.pem
+*.key
+soundcloud_token.json
+
+# Documentation
+*.md
+!README.md
+
+# Test files
+tests/
+*.test.py
