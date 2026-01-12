@@ -203,7 +203,7 @@ def generate_response(chat_id: str, user_id: str, message_text: str, user_name: 
     
     try:
         response = client.chat.completions.create(
-            model="gpt-4.1-mini",
+            model="gpt-5-nano",
             messages=messages,
             max_tokens=300,
             temperature=0.85,
