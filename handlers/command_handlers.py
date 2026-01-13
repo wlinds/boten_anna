@@ -591,6 +591,9 @@ def register_command_handlers(bot):
         ("sc_follow_all", soundcloud_track_bulk),
         ("sc_refresh", soundcloud_refresh),
         ("sc_retry_failed", soundcloud_retry_failed),
+        ("sc_my_account", soundcloud_set_my_account),
+        ("sc_my_stats", soundcloud_my_stats),
+        ("sc_stats", soundcloud_my_stats),  # Alias
     ]
 
     for command, callback in handlers:

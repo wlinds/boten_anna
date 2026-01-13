@@ -56,22 +56,39 @@ class SoundCloudService:
     
     def _load_tracking_data(self) -> Dict:
         """Load tracking data from file"""
+        default_data = {
+            "tracked_users": {},
+            "last_check": None,
+            "known_tracks": {},
+            "my_account": None,
+            "my_stats_history": [],
+            "my_followers": {}  # {user_id: {username, display_name}}
+        }
+
         if os.path.exists(self.data_path):
             try:
                 with open(self.data_path, 'r', encoding='utf-8') as f:
                     data = json.load(f)
-                    
+
                 # Convert known_tracks lists back to sets for efficient lookup
                 if "known_tracks" in data:
                     for user_id, tracks in data["known_tracks"].items():
                         if isinstance(tracks, list):
                             data["known_tracks"][user_id] = set(tracks)
-                
+
+                # Ensure new fields exist
+                if "my_account" not in data:
+                    data["my_account"] = None
+                if "my_stats_history" not in data:
+                    data["my_stats_history"] = []
+                if "my_followers" not in data:
+                    data["my_followers"] = {}  # {user_id: {username, display_name}}
+
                 return data
             except Exception as e:
                 print(f"Error loading SoundCloud tracking data: {e}")
-                return {"tracked_users": {}, "last_check": None, "known_tracks": {}}
-        return {"tracked_users": {}, "last_check": None, "known_tracks": {}}
+                return default_data
+        return default_data
     
     def _save_tracking_data(self):
         """Save tracking data to file"""
@@ -396,6 +413,292 @@ class SoundCloudService:
         
         print(f"Could not fetch tracks for user {user_id} from any endpoint")
         return []
+
+    def set_my_account(self, username: str) -> bool:
+        """Set the account to track stats for (your own account)"""
+        user_info = self._get_user_info(username)
+        if user_info:
+            self.tracking_data["my_account"] = {
+                "user_id": str(user_info['id']),
+                "username": user_info.get('permalink', username),
+                "display_name": user_info.get('full_name', username),
+                "permalink_url": user_info.get('permalink_url', f"https://soundcloud.com/{username}")
+            }
+            self._save_tracking_data()
+            print(f"Set my account to: {username}")
+            return True
+        return False
+
+    def _get_my_followers(self) -> Dict[str, Dict]:
+        """Fetch current followers list from SoundCloud API"""
+        if not self.tracking_data.get("my_account"):
+            return {}
+
+        user_id = self.tracking_data["my_account"]["user_id"]
+        followers = {}
+
+        try:
+            # Fetch followers - paginate to get all
+            next_href = f"{self.base_url}/users/{user_id}/followers"
+            params = {"limit": 200, "linked_partitioning": 1}
+
+            while next_href:
+                data = self._make_api_request(next_href, params if "?" not in next_href else None)
+                if not data:
+                    break
+
+                collection = data.get("collection", []) if isinstance(data, dict) else data
+                for follower in collection:
+                    if isinstance(follower, dict) and "id" in follower:
+                        followers[str(follower["id"])] = {
+                            "username": follower.get("permalink", follower.get("username", "unknown")),
+                            "display_name": follower.get("full_name", follower.get("username", "unknown"))
+                        }
+
+                # Check for next page
+                next_href = data.get("next_href") if isinstance(data, dict) else None
+                params = None  # next_href includes params
+
+        except Exception as e:
+            print(f"Error fetching followers: {e}")
+
+        return followers
+
+    def _get_track_likers(self, track_id: int) -> Dict[str, Dict]:
+        """Fetch users who liked a specific track"""
+        likers = {}
+
+        try:
+            next_href = f"{self.base_url}/tracks/{track_id}/favoriters"
+            params = {"limit": 200, "linked_partitioning": 1}
+
+            while next_href:
+                data = self._make_api_request(next_href, params if "?" not in next_href else None)
+                if not data:
+                    break
+
+                collection = data.get("collection", []) if isinstance(data, dict) else data
+                for liker in collection:
+                    if isinstance(liker, dict) and "id" in liker:
+                        likers[str(liker["id"])] = {
+                            "username": liker.get("permalink", liker.get("username", "unknown")),
+                            "display_name": liker.get("full_name", liker.get("username", "unknown"))
+                        }
+
+                next_href = data.get("next_href") if isinstance(data, dict) else None
+                params = None
+
+        except Exception as e:
+            print(f"Error fetching track likers: {e}")
+
+        return likers
+
+    def get_my_account_stats(self) -> Optional[Dict]:
+        """Get current stats for my account - per-track stats for detecting changes"""
+        if not self.tracking_data.get("my_account"):
+            return None
+
+        user_id = self.tracking_data["my_account"]["user_id"]
+
+        try:
+            # Get user info for follower count
+            user_info = self._make_api_request(f"{self.base_url}/users/{user_id}")
+            if not user_info:
+                return None
+
+            # Get per-track stats
+            track_stats = {}
+            tracks = self._get_user_tracks(user_id, limit=50)
+            for track in tracks:
+                track_data = self._make_api_request(f"{self.base_url}/tracks/{track.id}")
+                if track_data:
+                    track_stats[str(track.id)] = {
+                        "title": track.title,
+                        "likes": track_data.get('likes_count', 0) or track_data.get('favoritings_count', 0) or 0,
+                        "reposts": track_data.get('reposts_count', 0) or 0,
+                        "plays": track_data.get('playback_count', 0) or 0
+                    }
+
+            stats = {
+                "timestamp": datetime.now().isoformat(),
+                "followers_count": user_info.get('followers_count', 0),
+                "track_stats": track_stats
+            }
+
+            return stats
+
+        except Exception as e:
+            print(f"Error getting my account stats: {e}")
+            return None
+
+    def get_stats_changes(self) -> Optional[Dict]:
+        """Compare current stats with previous stats and return specific changes"""
+        current_stats = self.get_my_account_stats()
+        if not current_stats:
+            return None
+
+        history = self.tracking_data.get("my_stats_history", [])
+        previous_stats = history[-1] if history else None
+
+        changes = {
+            "new_followers": 0,
+            "lost_followers": 0,
+            "new_follower_names": [],  # List of display names of new followers
+            "lost_follower_names": [],  # List of display names of lost followers
+            "track_changes": []  # List of {track_title, new_likes, new_reposts, new_plays, new_liker_names}
+        }
+
+        # Get current followers list and compare with stored list
+        current_followers = self._get_my_followers()
+        stored_followers = self.tracking_data.get("my_followers", {})
+
+        if current_followers:
+            # Find new followers (in current but not in stored)
+            for user_id, user_data in current_followers.items():
+                if user_id not in stored_followers:
+                    changes["new_follower_names"].append(user_data["display_name"])
+
+            # Find lost followers (in stored but not in current)
+            for user_id, user_data in stored_followers.items():
+                if user_id not in current_followers:
+                    changes["lost_follower_names"].append(user_data["display_name"])
+
+            changes["new_followers"] = len(changes["new_follower_names"])
+            changes["lost_followers"] = len(changes["lost_follower_names"])
+
+            # Update stored followers
+            self.tracking_data["my_followers"] = current_followers
+
+        elif previous_stats:
+            # Fallback to count-based detection if followers API failed
+            prev_followers = previous_stats.get("followers_count", 0)
+            curr_followers = current_stats.get("followers_count", 0)
+            diff = curr_followers - prev_followers
+            if diff > 0:
+                changes["new_followers"] = diff
+            elif diff < 0:
+                changes["lost_followers"] = abs(diff)
+
+        # Check per-track changes
+        if previous_stats:
+            prev_track_stats = previous_stats.get("track_stats", {})
+            curr_track_stats = current_stats.get("track_stats", {})
+
+            for track_id, curr_data in curr_track_stats.items():
+                prev_data = prev_track_stats.get(track_id, {"likes": 0, "reposts": 0, "plays": 0})
+
+                new_likes = curr_data["likes"] - prev_data.get("likes", 0)
+                new_reposts = curr_data["reposts"] - prev_data.get("reposts", 0)
+                new_plays = curr_data["plays"] - prev_data.get("plays", 0)
+
+                if new_likes > 0 or new_reposts > 0:
+                    track_change = {
+                        "title": curr_data["title"],
+                        "new_likes": new_likes if new_likes > 0 else 0,
+                        "new_reposts": new_reposts if new_reposts > 0 else 0,
+                        "new_plays": new_plays if new_plays > 0 else 0,
+                        "new_liker_names": []
+                    }
+
+                    # Try to get who liked the track (only if there are new likes)
+                    if new_likes > 0:
+                        try:
+                            current_likers = self._get_track_likers(int(track_id))
+                            # We could store previous likers, but for now just show new likers count
+                            # Getting specific new likers would require storing liker lists per track
+                            # which might be expensive for many tracks
+                        except Exception as e:
+                            print(f"Error getting likers for track {track_id}: {e}")
+
+                    changes["track_changes"].append(track_change)
+
+        # Save current stats to history (keep last 30 entries)
+        history.append(current_stats)
+        if len(history) > 30:
+            history = history[-30:]
+        self.tracking_data["my_stats_history"] = history
+        self._save_tracking_data()
+
+        return changes
+
+    def format_stats_update(self, changes: Dict) -> str:
+        """Format stats changes as activity notifications"""
+        if not changes:
+            return ""
+
+        lines = []
+
+        # Follower changes - with names if available
+        new_follower_names = changes.get("new_follower_names", [])
+        lost_follower_names = changes.get("lost_follower_names", [])
+
+        if new_follower_names:
+            if len(new_follower_names) == 1:
+                lines.append(f"New follower: {new_follower_names[0]}")
+            elif len(new_follower_names) <= 3:
+                names = ", ".join(new_follower_names)
+                lines.append(f"New followers: {names}")
+            else:
+                # Show first 3 and count of remaining
+                names = ", ".join(new_follower_names[:3])
+                remaining = len(new_follower_names) - 3
+                lines.append(f"New followers: {names} and {remaining} more")
+        elif changes.get("new_followers", 0) > 0:
+            # Fallback to count-only if names not available
+            count = changes["new_followers"]
+            if count == 1:
+                lines.append("You gained a new follower!")
+            else:
+                lines.append(f"You gained {count} new followers!")
+
+        if lost_follower_names:
+            if len(lost_follower_names) == 1:
+                lines.append(f"Lost follower: {lost_follower_names[0]}")
+            elif len(lost_follower_names) <= 3:
+                names = ", ".join(lost_follower_names)
+                lines.append(f"Lost followers: {names}")
+            else:
+                names = ", ".join(lost_follower_names[:3])
+                remaining = len(lost_follower_names) - 3
+                lines.append(f"Lost followers: {names} and {remaining} more")
+        elif changes.get("lost_followers", 0) > 0:
+            count = changes["lost_followers"]
+            if count == 1:
+                lines.append("You lost a follower")
+            else:
+                lines.append(f"You lost {count} followers")
+
+        # Track activity
+        for track_change in changes.get("track_changes", []):
+            title = track_change["title"]
+            likes = track_change.get("new_likes", 0)
+            reposts = track_change.get("new_reposts", 0)
+
+            if likes > 0 and reposts > 0:
+                if likes == 1 and reposts == 1:
+                    lines.append(f"'{title}' got a new like and repost!")
+                elif likes == 1:
+                    lines.append(f"'{title}' got a new like and {reposts} reposts!")
+                elif reposts == 1:
+                    lines.append(f"'{title}' got {likes} new likes and a repost!")
+                else:
+                    lines.append(f"'{title}' got {likes} new likes and {reposts} reposts!")
+            elif likes > 0:
+                if likes == 1:
+                    lines.append(f"'{title}' got a new like!")
+                else:
+                    lines.append(f"'{title}' got {likes} new likes!")
+            elif reposts > 0:
+                if reposts == 1:
+                    lines.append(f"'{title}' got a new repost!")
+                else:
+                    lines.append(f"'{title}' got {reposts} new reposts!")
+
+        if not lines:
+            return ""
+
+        return "**SoundCloud Activity**\n" + "\n".join(lines)
+
 
 # Singleton instance
 soundcloud_service = SoundCloudService()

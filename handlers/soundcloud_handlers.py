@@ -335,6 +335,58 @@ async def soundcloud_debug(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     
     await update.message.reply_text("\n".join(debug_info))
 
+async def soundcloud_set_my_account(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Set your own SoundCloud account to track stats for"""
+    if not context.args:
+        # Show current account if set
+        my_account = soundcloud_service.tracking_data.get("my_account")
+        if my_account:
+            await update.message.reply_text(
+                f"Currently tracking stats for: {my_account['display_name']} (@{my_account['username']})\n\n"
+                f"Use /sc_my_account <username> to change it."
+            )
+        else:
+            await update.message.reply_text(
+                "No account set for stats tracking.\n"
+                "Usage: /sc_my_account <your_soundcloud_username>"
+            )
+        return
+
+    username = context.args[0]
+    await update.message.reply_text(f"Setting {username} as your account...")
+
+    success = soundcloud_service.set_my_account(username)
+
+    if success:
+        await update.message.reply_text(
+            f"Now tracking stats for {username}!\n"
+            f"Your followers, likes, and reposts will be included in morning updates."
+        )
+    else:
+        await update.message.reply_text(
+            f"Failed to find account {username}. Make sure the username is correct."
+        )
+
+
+async def soundcloud_my_stats(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Show current stats for your SoundCloud account"""
+    my_account = soundcloud_service.tracking_data.get("my_account")
+    if not my_account:
+        await update.message.reply_text(
+            "No account set. Use /sc_my_account <username> first."
+        )
+        return
+
+    await update.message.reply_text(f"Fetching stats for {my_account['display_name']}...")
+
+    changes = soundcloud_service.get_stats_changes()
+    if changes:
+        message = soundcloud_service.format_stats_update(changes)
+        await update.message.reply_text(message)
+    else:
+        await update.message.reply_text("Could not fetch stats. Try again later.")
+
+
 async def soundcloud_refresh(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Refresh SoundCloud access token"""
     await update.message.reply_text("Attempting to refresh SoundCloud access token...")

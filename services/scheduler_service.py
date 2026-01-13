@@ -85,8 +85,18 @@ class SchedulerService:
         else:
             personal_greeting = "God morgon!"
 
-        message = f"{personal_greeting}\n\n{date_str}\n{weather_info}\n\nHa en bra dag! 🌞"
-    
+        # Get SoundCloud stats if configured
+        soundcloud_stats = ""
+        try:
+            if soundcloud_service.tracking_data.get("my_account"):
+                changes = soundcloud_service.get_stats_changes()
+                if changes:
+                    soundcloud_stats = "\n\n" + soundcloud_service.format_stats_update(changes)
+        except Exception as e:
+            logger.error(f"Error getting SoundCloud stats: {e}")
+
+        message = f"{personal_greeting}\n\n{date_str}\n{weather_info}{soundcloud_stats}\n\nHa en bra dag!"
+
         try:
             await context.bot.send_message(chat_id=CHAT_ID, text=message)
             logger.info(f"Sent morning update to chat {CHAT_ID}")
